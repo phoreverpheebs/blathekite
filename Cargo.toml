@@ -1,12 +1,12 @@
 [package]
-name = "gibberish"
+name = "blathekite"
+description = "blatherskite, but the 'rs' is in the code"
 version = "0.1.0"
 edition = "2021"
 
 [profile.dev]
 opt-level = 3
 overflow-checks = false
-strip = true
 
-[profile.release]
-strip = true
+[dependencies]
+libc = "0.2.140"
