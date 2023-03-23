@@ -1,47 +1,29 @@
-#![allow(dead_code, unused_variables)]
-use std::{
-    // arch::asm,
-    mem, ptr,
-};
+use std::{ mem, ptr };
 
-const HAI: &str = "hai";
+const HAI: &str = "hai world <3";
 
 fn main() {
-    let scfunc = unsafe {
-        let mut addr = mem::transmute::<fn(*mut u32, u32, u32, u32, &mut u8) -> u32, *mut u8>(int80);
-        while ptr::read(addr) != 0x97 {
+    let mut addr: *mut u8;
+    let notsyscall = unsafe {
+        addr = mem::transmute::<fn(&mut u32, u8, &mut u32, &mut u16) -> u8, *mut u8>(syscall);
+        while ptr::read(addr) != 0x84 {
             addr = (addr as usize + 1) as *mut u8;
         }
-        mem::transmute::<*mut u8, fn(usize) -> usize>(addr)
+        mem::transmute::<*mut u8, fn(usize, usize, usize, usize, usize) -> usize>(addr) 
+            // we can manipulate certain register states using function parameters
+            //                        edi    esi    edx    ecx    r8
     };
 
-    let hai = unsafe {
-        mem::transmute::<&str, (usize, usize)>(HAI).0
-    };
-
-    not_syscall(4, 0, 1, hai, scfunc);
+    notsyscall(1, HAI.as_ptr() as usize, HAI.len(), 0, 1);
 }
 
-#[inline(never)]
-fn not_syscall(
-    eax: usize, 
-    _ebx: usize, 
-    edx: usize,
-    ecx: usize, 
-    sc: fn(usize) -> usize,
-) -> usize {
-    sc(eax);
-    edx + ecx
-}
-
-pub fn int80(a: *mut u32, _b: u32, c: u32, d: u32, x: &mut u8) -> u32 {
-    unsafe { *((a as usize + 0x05eb) as *mut u32) = c; }
-    *x = 0xcd; // won't be optimised away
-    let mut d = d as u8; /* makes sense to use the variable in ecx, because modr/m will give 0xf9
-    which is a legal instruction for user-space, whereas using the variable in edx (c: u32) will give
-    0xfa modr/m (cli), which would raise a #GP(0) */
-    while d < 0xc2 { // an 8-bit comparison, to get an early ret
-        d += 1;
+fn syscall(edi: &mut u32, sil: u8, edx: &mut u32, ecx: &mut u16) -> u8 {
+    let mut acc = *edi as u8 + sil;
+    if acc > 0x90 { /* Without runtime conditional it'd get optimised */
+        *edx += 0x8b49c084;
+        acc <<= 3;
+        *ecx += 0x050f; /* This feels like cheating */
     }
-    d as u32
+    acc
 }
+
