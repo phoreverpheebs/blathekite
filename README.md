@@ -6,7 +6,7 @@ x86 execution flow, `blathekite` does this by trusting the compiler to compile
 to the instructions we want and in the order we want.
 
 As of now, this branch defines the printed string in plaintext similar to the
-[defined-string] branch in `gibberish`. Similar methods as the main branch of 
+[defined-string] branch in [gibberish]. Similar methods as the main branch of 
 [gibberish], which scatters printable bytes across the binary, are being 
 actively worked on!
 
