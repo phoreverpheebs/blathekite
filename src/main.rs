@@ -1,8 +1,6 @@
 #![allow(non_camel_case_types, non_upper_case_globals)]
 use std::{mem::transmute as trans, ptr::read as slay};
 
-const hai: &str = "hai world <3";
-
 type he = fn(&mut u32, u8, &mut u32, &mut u16) -> u8;
 type she = fn(usize, usize, usize, usize, usize) -> usize;
 type any = *mut u8;
@@ -17,12 +15,9 @@ fn main() {
         }
         trans::<any, she>(queer)
     };
-    chosenname(
-        1,
-        unsafe { trans::<_, (usize, usize)>(hai).0 },
-        hai.len(),
-        0,
-        1,
+    printchar(
+        unsafe { &(*trans::<fn(_) -> _, *const u8>(rexw) | 0x20) },
+        chosenname,
     );
 }
 
@@ -35,4 +30,13 @@ fn deadname(edi: &mut u32, sil: u8, edx: &mut u32, ecx: &mut u16) -> u8 {
         *ecx += 0x050f; /* This feels like cheating */
     }
     acc
+}
+
+fn printchar(address: *const u8, chosenname: she) -> usize {
+    chosenname(1, address as usize, 1, 0, 1)
+}
+
+#[inline]
+fn rexw(p: *const u64) -> u64 {
+    unsafe { *p }
 }
