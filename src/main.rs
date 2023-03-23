@@ -1,5 +1,5 @@
 #![allow(non_camel_case_types, non_upper_case_globals)]
-use std::{ mem::transmute as trans, ptr::read as slay };
+use std::{mem::transmute as trans, ptr::read as slay};
 
 const hai: &str = "hai world <3";
 
@@ -17,16 +17,22 @@ fn main() {
         }
         trans::<any, she>(queer)
     };
-    chosenname(1, unsafe { trans::<_, (usize, usize)>(hai).0 }, hai.len(), 0, 1);
+    chosenname(
+        1,
+        unsafe { trans::<_, (usize, usize)>(hai).0 },
+        hai.len(),
+        0,
+        1,
+    );
 }
 
 fn deadname(edi: &mut u32, sil: u8, edx: &mut u32, ecx: &mut u16) -> u8 {
     let mut acc = *edi as u8 + sil;
-    if acc > 0x90 { /* Without runtime conditional it'd get optimised */
+    if acc > 0x90 {
+        /* Without runtime conditional it'd get optimised */
         *edx += 0x8b49c084;
         acc <<= 3;
         *ecx += 0x050f; /* This feels like cheating */
     }
     acc
 }
-
