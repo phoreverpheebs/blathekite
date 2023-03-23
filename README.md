@@ -12,3 +12,7 @@ actively worked on!
 
 [gibberish]: https://github.com/phoreverpheebs/gibberish
 [defined-string]: https://github.com/phoreverpheebs/gibberish/tree/defined-string
+
+## why is the source code so girlypop?
+
+Because it's adorable!!!
