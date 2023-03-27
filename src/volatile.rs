@@ -4,18 +4,10 @@ use std::{
 
 #[inline(never)]
 pub fn incrementjmp(di: u64, si: u64) -> u64 {
-    if si + 0xc3d23c000000 > 0x3cf3167f {
+    if si + 0xc3d1ff00c88c9837 > 0x3ca316d0 {
         si
     } else {
         di
-    }
-}
-
-#[inline(never)]
-pub fn modify(_: u32, si: &mut usize) -> u64 {
-    *si -= 7;
-    unsafe {
-        trans::<_, fn() -> u64>( trans::<fn(_, _) -> _, usize>(incrementjmp) + 5)()
     }
 }
 
@@ -38,3 +30,22 @@ pub fn modify(_: u32, si: &mut usize) -> u64 {
  * 'gaslight_the_compiler' would have to exist for 'incrementjmp' to be
  * compiled as a function.
  */
+
+#[inline(never)]
+pub fn modify(_: u32, si: &mut usize, dx: usize) -> u64 {
+    *si -= 7;
+    let n = unsafe { /* It will never actually return to here (compiler doesn't know that) */
+        trans::<_, fn() -> u64>( trans::<fn(_, _) -> _, usize>(incrementjmp) + dx*5)()
+    };
+    n + continue_from_here(n as usize)
+}
+
+#[inline(never)]
+pub fn continue_from_here(mut di: usize) -> u64 {
+    if di | 5 < 523 {
+        (di as u64) << 2
+    } else {
+        modify(523, &mut di, 82535) /* These numbers are random (for now) */
+    }
+    /* Extend this function */
+}

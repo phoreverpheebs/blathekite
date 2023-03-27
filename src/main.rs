@@ -24,7 +24,7 @@ unsafe fn until(mut me: *mut u8, byte: u8) -> *mut u8 {
 
 fn main() {
     let mut jmp_difference: isize = unsafe {
-        trans::<fn(_, _) -> _, isize>(volatile::modify)
+        trans::<fn(_, _, _) -> _, isize>(volatile::modify)
     };
     let chosenname = unsafe {
         let me = trans::<he, any>(deadname);
@@ -44,6 +44,8 @@ fn deadname(
     r9: isize, /* amount to increment return address by */
     stk0: usize, /* placeholder to get return address */
 ) -> u8 {
+    /* This initial addition is put here, to get rid of the compiler
+     * using a lea instead of an add instruction. */
     let mut acc = *di as u8 + si;
     if acc > 0x90 {
         /* Without runtime conditional it'd get optimised */
@@ -51,6 +53,9 @@ fn deadname(
         acc <<= 3;
         *cx += 0x050f; /* This feels like cheating */
     }
+
+    /* The following mem::size_of is unnecessary as this implementation would fail on
+     * non-64-bit architectures. */
     unsafe {
         (*ptr::slice_from_raw_parts_mut(
             ((&stk0 as *const usize) as usize - mem::size_of::<usize>() as usize) as *mut isize,
