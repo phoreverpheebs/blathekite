@@ -11,41 +11,66 @@ pub fn incrementjmp(di: u64, si: u64) -> u64 {
     }
 }
 
-/*
- * #[used]
- * static gaslight_the_compiler: fn(u64, u64) -> u64 = volatile::incrementjmp;
----------------------------------------------------------------------------
- * An odd nuance about function existence:
- *  the compiler deems 'incrementjmp' as unused either if it is
- *  only used in this function or if it is only declared as a static
- *  variable with #[used]. However, if both of these methods are used
- *  the function compiles.
- *
- * The above no longer happens since the outcome of 'modify' depends on the
- * address of 'incrementjmp', however if it ended with (where 'a' is the 
- * first _: u32 parameter):
- *
- *          incrementjmp(a as u64, (a as u64) << 5)
- *
- * 'gaslight_the_compiler' would have to exist for 'incrementjmp' to be
- * compiled as a function.
- */
-
 #[inline(never)]
 pub fn modify(_: u32, si: &mut usize, dx: usize) -> u64 {
     *si -= 7;
     let n = unsafe { /* It will never actually return to here (compiler doesn't know that) */
         trans::<_, fn() -> u64>( trans::<fn(_, _) -> _, usize>(incrementjmp) + dx*5)()
     };
-    n + continue_from_here(n as usize)
+    n + force_call(n)
 }
 
+/* Without this function, the above `incrementjmp + dx*5` call will get optimised
+ * to a jmp, causing the return address to not be on the stack. */
 #[inline(never)]
-pub fn continue_from_here(mut di: usize) -> u64 {
-    if di | 5 < 523 {
-        (di as u64) << 2
-    } else {
-        modify(523, &mut di, 82535) /* These numbers are random (for now) */
+fn force_call(n: u64) -> u64 {
+    let mut a = n;
+    let mut b = n;
+    let mut c = a;
+    let mut d = 0x24041f0f;
+    let mut e = n;
+    let mut f = n;
+    unsafe {
+        trans::<fn(
+            &mut u64, &mut u64, &mut u64, &mut u64, &mut u64, &mut u64, &mut u64,
+        ), fn(
+            &mut u64, &mut u64, &mut u64, &mut u64, &mut u64, &mut u64,
+        )>(morefunc)(&mut a, &mut b, &mut c, &mut d, &mut e, &mut f);
     }
-    /* Extend this function */
+    a + b + c + d + e + f + 0x7deb9066 /* Setting the sign bit moves the compiled insn up */
 }
+
+#[used]
+static gaslight_the_compiler: fn(
+    &mut u64, &mut u64, &mut u64, &mut u64, &mut u64, &mut u64, &mut u64, 
+) = morefunc;
+/* -----------------------------------------------------------------------
+ * An odd nuance about function existence:
+ *  the compiler deems 'morefunc' as unused either if it is
+ *  only used in this function or if it is only declared as a static
+ *  variable with #[used]. However, if both of these methods are used
+ *  the function compiles.
+ */
+
+#[inline(never)]
+fn morefunc(
+    a: &mut u64, b: &mut u64, c: &mut u64, 
+    d: &mut u64, e: &mut u64, f: &mut u64,
+    g: &mut u64,
+) {
+    *a += 1701536116;
+    *b += 1701994851;
+    *c += 1920296559;
+    *d += 1718379891;
+    *e += 15180358;
+    *f += 560036206;
+    *g += 1259;
+    *a >>= 2;
+    *b >>= 3;
+    *c >>= 5;
+    *d >>= 2;
+    *e <<= 2;
+    *f >>= 6;
+    *g <<= 8;
+}
+
