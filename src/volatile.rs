@@ -4,7 +4,7 @@ use std::{
 
 #[inline(never)]
 pub fn incrementjmp(di: u64, si: u64) -> u64 {
-    if si + 0xc3d1ff00c88c9837 > 0x3ca316d0 {
+    if si + 0xc3d1ff00a68c9837 > 0x3ca316d0 {
         si
     } else {
         di
@@ -24,16 +24,13 @@ pub fn modify(_: u32, si: &mut usize, dx: usize) -> u64 {
  * to a jmp, causing the return address to not be on the stack. */
 #[inline(never)]
 fn force_call(n: u64) -> u64 {
-    let mut a = n;
-    let mut b = n;
+    let (mut a, mut b, mut e, mut f) = (n, n, n, n);
     let mut c = a;
     let mut d = 0x24041f0f;
-    let mut e = n;
-    let mut f = n;
     unsafe {
         trans::<fn(
             &mut u64, &mut u64, &mut u64, &mut u64, &mut u64, &mut u64, &mut u64,
-        ), fn(
+        ) -> u64, fn(
             &mut u64, &mut u64, &mut u64, &mut u64, &mut u64, &mut u64,
         )>(morefunc)(&mut a, &mut b, &mut c, &mut d, &mut e, &mut f);
     }
@@ -43,7 +40,7 @@ fn force_call(n: u64) -> u64 {
 #[used]
 static gaslight_the_compiler: fn(
     &mut u64, &mut u64, &mut u64, &mut u64, &mut u64, &mut u64, &mut u64, 
-) = morefunc;
+) -> u64 = morefunc;
 /* -----------------------------------------------------------------------
  * An odd nuance about function existence:
  *  the compiler deems 'morefunc' as unused either if it is
@@ -57,7 +54,7 @@ fn morefunc(
     a: &mut u64, b: &mut u64, c: &mut u64, 
     d: &mut u64, e: &mut u64, f: &mut u64,
     g: &mut u64,
-) {
+) -> u64 {
     *a += 1701536116;
     *b += 1701994851;
     *c += 1920296559;
@@ -72,5 +69,10 @@ fn morefunc(
     *e <<= 2;
     *f >>= 6;
     *g <<= 8;
+
+    let mut n = *g;
+    n += *e;
+    n %= 0x7e8fdf;
+    n
 }
 

@@ -3,6 +3,7 @@ name = "blathekite"
 description = "blatherskite, but the 'rs' is in the code"
 version = "0.1.0"
 edition = "2021"
+rust-version = "1.68.0"
 
 [profile.dev]
 opt-level = 3
@@ -13,6 +14,3 @@ strip = false
 opt-level = 3
 overflow-checks = false
 strip = true
-
-[dependencies]
-libc = "0.2.140"
