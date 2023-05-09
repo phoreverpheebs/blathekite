@@ -2,7 +2,6 @@
 use std::{mem::transmute as trans, ptr::read as slay};
 use std::{ptr, mem};
 
-/* Imported functions will live at a lower address */
 mod volatile;
 
 /* 6 usize arguments to fill up the registers and 2 stack arguments.

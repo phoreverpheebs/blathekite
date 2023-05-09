@@ -7,7 +7,7 @@ to the instructions we want and in the order we want.
 
 [gibberish]: https://github.com/phoreverpheebs/gibberish
 
-## Interesting things
+## Observations
 
 ### 'lea' instead of 'add' optimisation
 
@@ -22,6 +22,9 @@ Therefore, we may notice that in the `deadname` function, we assign the
 addition of variables _di_ and _si_ to an accumulator variable. This eliminates
 the initial use of a `lea` instruction for further `add` operations.
 
-## why is the source code so girlypop?
+### A change between rust 1.68.0 and 1.68.1
 
-Because it's adorable!!!
+Despite the source code from 1.68.0 to 1.68.1 only having 46 additions and 14
+deletions, the update happens to absolutely reorganise the function ordering
+of blathekite, where the `volatile` module gets compiled **before** the main
+file, causing the relative addressing to jump to unintended memory addresses.

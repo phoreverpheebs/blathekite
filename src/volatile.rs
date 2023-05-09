@@ -1,6 +1,4 @@
-use std::{
-    mem::transmute as trans,
-};
+use std::mem::transmute as trans;
 
 #[inline(never)]
 pub fn incrementjmp(di: u64, si: u64) -> u64 {
@@ -14,35 +12,38 @@ pub fn incrementjmp(di: u64, si: u64) -> u64 {
 #[inline(never)]
 pub fn modify(_: u32, si: &mut usize, dx: usize) -> u64 {
     *si -= 7;
-    let n = unsafe { /* It will never actually return to here (compiler doesn't know that) */
-        trans::<_, fn() -> u64>( trans::<fn(_, _) -> _, usize>(incrementjmp) + dx*5)()
+    let n = unsafe {
+        /* It will never actually return to here (compiler doesn't know that) */
+        trans::<_, fn() -> u64>(trans::<fn(_, _) -> _, usize>(incrementjmp) + dx * 5)()
     };
     n + force_call(n)
 }
 
-/* Without this function, the above `incrementjmp + dx*5` call will get optimised
- * to a jmp, causing the return address to not be on the stack. */
 #[inline(never)]
-fn force_call(n: u64) -> u64 {
-    let (mut a, mut b, mut e, mut f) = (n, n, n, n);
+pub fn force_call(n: u64) -> u64 {
+    let (mut a, mut b, mut d, e, f) = (n, n, n, n, n);
     let mut c = a;
-    let mut d = 0x24041f0f;
     unsafe {
-        trans::<fn(
-            &mut u64, &mut u64, &mut u64, &mut u64, &mut u64, &mut u64, &mut u64,
-        ) -> u64, fn(
-            &mut u64, &mut u64, &mut u64, &mut u64, &mut u64, &mut u64,
-        )>(morefunc)(&mut a, &mut b, &mut c, &mut d, &mut e, &mut f);
+        trans::<
+            fn(&mut u64, &mut u64, &mut u64, &mut u64, &mut u64, &mut u64, &mut u64) -> u64,
+            fn(&mut u64, &mut u64, &mut u64, &mut u64),
+        >(morefunc)(&mut a, &mut b, &mut c, &mut d);
     }
-    a + b + c + d + e + f + 0x7deb9066 /* Setting the sign bit moves the compiled insn up */
+    a + b + d + e + f + 0x80005beb /* set sign bit, first 3 bytes are under our control */
 }
 
 #[used]
 static gaslight_the_compiler: fn(
-    &mut u64, &mut u64, &mut u64, &mut u64, &mut u64, &mut u64, &mut u64, 
+    &mut u64,
+    &mut u64,
+    &mut u64,
+    &mut u64,
+    &mut u64,
+    &mut u64,
+    &mut u64,
 ) -> u64 = morefunc;
 /* -----------------------------------------------------------------------
- * An odd nuance about function existence:
+ * An odd nuance about function inlining:
  *  the compiler deems 'morefunc' as unused either if it is
  *  only used in this function or if it is only declared as a static
  *  variable with #[used]. However, if both of these methods are used
@@ -51,8 +52,12 @@ static gaslight_the_compiler: fn(
 
 #[inline(never)]
 fn morefunc(
-    a: &mut u64, b: &mut u64, c: &mut u64, 
-    d: &mut u64, e: &mut u64, f: &mut u64,
+    a: &mut u64,
+    b: &mut u64,
+    c: &mut u64,
+    d: &mut u64,
+    e: &mut u64,
+    f: &mut u64,
     g: &mut u64,
 ) -> u64 {
     *a += 1701536116;
@@ -61,18 +66,21 @@ fn morefunc(
     *d += 1718379891;
     *e += 15180358;
     *f += 560036206;
-    *g += 1259;
     *a >>= 2;
-    *b >>= 3;
-    *c >>= 5;
-    *d >>= 2;
-    *e <<= 2;
-    *f >>= 6;
     *g <<= 8;
 
     let mut n = *g;
-    n += *e;
-    n %= 0x7e8fdf;
-    n
+    n %= 0x15959f76458e3241;
+    catch_from_modulo(n)
 }
 
+#[inline(never)]
+fn catch_from_modulo(a: u64) -> u64 {
+    if a >= 580235 {
+        // 0xc42c
+        // 0xc5cb
+        (a >> 2) + 0x07eb0ae9809066
+    } else {
+        a - 0x3c2e01
+    }
+}
