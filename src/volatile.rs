@@ -76,11 +76,9 @@ fn morefunc(
 
 #[inline(never)]
 fn catch_from_modulo(a: u64) -> u64 {
-    if a >= 580235 {
-        // 0xc42c
-        // 0xc5cb
-        (a >> 2) + 0x07eb0ae9809066
+    if a >= 0xc345ee8348f200 {
+        (a >> 2) + 0x05eb51480ae98090
     } else {
-        a - 0x3c2e01
+        a - 0xfff9143176b72e01
     }
 }

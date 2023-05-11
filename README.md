@@ -19,7 +19,7 @@ addition, multiplication and subtraction, whilst also writing the result
 to a seperate register.
 
 Therefore, we may notice that in the `deadname` function, we assign the 
-addition of variables _di_ and _si_ to an accumulator variable. This eliminates
+sum of variables _di_ and _si_ to an accumulator variable. This eliminates
 the initial use of a `lea` instruction for further `add` operations.
 
 ### A change between rust 1.68.0 and 1.68.1
