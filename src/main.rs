@@ -1,6 +1,6 @@
 #![allow(non_camel_case_types, non_upper_case_globals)]
+use std::{mem, ptr};
 use std::{mem::transmute as trans, ptr::read as slay};
-use std::{ptr, mem};
 
 mod volatile;
 
@@ -11,7 +11,7 @@ type she = fn(usize, usize, usize, usize, usize, isize, usize, u32) -> usize;
 type he = fn(&mut u32, u8, &mut u32, &mut u16, &mut u32, isize, usize) -> u8;
 type any = *mut u8;
 
-const done_questioning: u8 = 0x84;
+const end_diff_search: u8 = 0x84;
 
 #[inline(always)]
 unsafe fn until(mut me: *mut u8, byte: u8) -> *mut u8 {
@@ -22,25 +22,27 @@ unsafe fn until(mut me: *mut u8, byte: u8) -> *mut u8 {
 }
 
 fn main() {
-    let mut jmp_difference: isize = unsafe {
-        trans::<fn(_, _, _) -> _, isize>(volatile::modify)
-    };
-    let chosenname = unsafe {
-        let me = trans::<he, any>(deadname);
-        let out = trans::<any, she>(until(me, done_questioning));
+    let mut jmp_difference: isize = unsafe { trans::<fn(_, _, _) -> _, isize>(volatile::modify) };
+    let jmp_loc = unsafe {
+        let me = trans::<he, any>(do_some_magic);
+        let out = trans::<any, she>(until(me, end_diff_search));
         jmp_difference -= until(me, 0xc3) as isize - 0x24;
         out
     };
-    printit(unsafe { &(*trans::<fn(_) -> _, *const u8>(rexw) | 0x20) }, chosenname, jmp_difference);
+    printit(
+        unsafe { &(*trans::<fn(_) -> _, *const u8>(rexw) | 0x20) },
+        jmp_loc,
+        jmp_difference,
+    );
 }
 
-fn deadname(
-    di: &mut u32, 
-    si: u8, 
-    dx: &mut u32, 
-    cx: &mut u16, 
+fn do_some_magic(
+    di: &mut u32,
+    si: u8,
+    dx: &mut u32,
+    cx: &mut u16,
     _: &mut u32,
-    r9: isize, /* amount to increment return address by */
+    r9: isize,   /* amount to increment return address by */
     stk0: usize, /* placeholder to get return address */
 ) -> u8 {
     /* This initial addition is put here, to get rid of the compiler
@@ -53,8 +55,6 @@ fn deadname(
         *cx += 0x050f; /* This feels like cheating */
     }
 
-    /* The following mem::size_of is unnecessary as this implementation would fail on
-     * non-64-bit architectures. */
     unsafe {
         (*ptr::slice_from_raw_parts_mut(
             ((&stk0 as *const usize) as usize - mem::size_of::<usize>() as usize) as *mut isize,
@@ -65,10 +65,16 @@ fn deadname(
 }
 
 #[inline(always)]
-fn printit(address: *const u8, chosenname: she, jmp: isize) -> usize {
-    chosenname(
-        1, address as usize, 1, 0, 1, jmp, /* register values */
-        0, 0x6cc3, /* stack values */
+fn printit(address: *const u8, func: she, jmp: isize) -> usize {
+    func(
+        1,
+        address as usize,
+        1,
+        0,
+        1,
+        jmp, /* register values */
+        0,
+        0x6cc3, /* stack values */
     )
 }
 
