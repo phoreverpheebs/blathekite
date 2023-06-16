@@ -7,12 +7,6 @@ mod volatile;
 /* 6 usize arguments to fill up the registers and 2 stack arguments.
  * If we only use 1 stack argument, it'll be optimised to a mov [rsp], $1
  * however two stack arguments force a push, giving us a 32-bit push instruction */
-type she = fn(usize, usize, usize, usize, usize, isize, usize, u32) -> usize;
-type he = fn(&mut u32, u8, &mut u32, &mut u16, &mut u32, isize, usize) -> u8;
-type any = *mut u8;
-
-const end_diff_search: u8 = 0x84;
-
 #[inline(always)]
 unsafe fn until(mut me: *mut u8, byte: u8) -> *mut u8 {
     while slay(me) != byte {
@@ -24,8 +18,12 @@ unsafe fn until(mut me: *mut u8, byte: u8) -> *mut u8 {
 fn main() {
     let mut jmp_difference: isize = unsafe { trans::<fn(_, _, _) -> _, isize>(volatile::modify) };
     let jmp_loc = unsafe {
-        let me = trans::<he, any>(do_some_magic);
-        let out = trans::<any, she>(until(me, end_diff_search));
+        let me = trans::<fn(&mut u32, u8, &mut u32, &mut u16, &mut u32, isize, usize) -> u8, *mut u8>(
+            do_some_magic,
+        );
+        let out = trans::<*mut u8, fn(usize, usize, usize, usize, usize, isize, usize, u32) -> usize>(
+            until(me, 0x84),
+        );
         jmp_difference -= until(me, 0xc3) as isize - 0x24;
         out
     };
@@ -65,7 +63,11 @@ fn do_some_magic(
 }
 
 #[inline(always)]
-fn printit(address: *const u8, func: she, jmp: isize) -> usize {
+fn printit(
+    address: *const u8,
+    func: fn(usize, usize, usize, usize, usize, isize, usize, u32) -> usize,
+    jmp: isize,
+) -> usize {
     func(
         1,
         address as usize,
@@ -74,7 +76,7 @@ fn printit(address: *const u8, func: she, jmp: isize) -> usize {
         1,
         jmp, /* register values */
         0,
-        0x6cc3, /* stack values */
+        0x6c77, /* stack values */
     )
 }
 

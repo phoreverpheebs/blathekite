@@ -3,14 +3,9 @@ name = "blathekite"
 description = "blatherskite, but the 'rs' is in the code"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.68.0"
+rust-version = "1.68.0" # technically the only supported version, but we can't force it with cargo
 
 [profile.dev]
 opt-level = 3
 overflow-checks = false
 strip = false
-
-[profile.release]
-opt-level = 3
-overflow-checks = false
-strip = true

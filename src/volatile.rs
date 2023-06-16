@@ -1,5 +1,3 @@
-use std::mem::transmute as trans;
-
 #[inline(never)]
 pub fn incrementjmp(di: u64, si: u64) -> u64 {
     if si + 0xc3d1ff00a68c9837 > 0x3ca316d0 {
@@ -14,7 +12,7 @@ pub fn modify(_: u32, si: &mut usize, dx: usize) -> u64 {
     *si -= 7;
     let n = unsafe {
         /* It will never actually return to here (compiler doesn't know that) */
-        trans::<_, fn() -> u64>(trans::<fn(_, _) -> _, usize>(incrementjmp) + dx * 5)()
+        std::mem::transmute::<_, fn() -> u64>(std::mem::transmute::<fn(_, _) -> _, usize>(incrementjmp) + dx * 5)()
     };
     n + force_call(n)
 }
@@ -24,7 +22,7 @@ pub fn force_call(n: u64) -> u64 {
     let (mut a, mut b, mut d, e, f) = (n, n, n, n, n);
     let mut c = a;
     unsafe {
-        trans::<
+        std::mem::transmute::<
             fn(&mut u64, &mut u64, &mut u64, &mut u64, &mut u64, &mut u64, &mut u64) -> u64,
             fn(&mut u64, &mut u64, &mut u64, &mut u64),
         >(morefunc)(&mut a, &mut b, &mut c, &mut d);
@@ -76,9 +74,39 @@ fn morefunc(
 
 #[inline(never)]
 fn catch_from_modulo(a: u64) -> u64 {
-    if a >= 0xc345ee8348f200 {
-        (a >> 2) + 0x05eb51480ae98090
+    let a = a + 0x77;
+    if a >= 0x0feb51480ae98091 {
+        let mut pls = Please {
+            a: a,
+            b: 0x10ebce8948d1ff + (a >> 2),
+        };
+        (a >> 2) + another(&mut pls)
     } else {
-        a - 0xfff9143176b72e01
+        a - 0xd514ba117cb70e78
     }
+}
+
+struct Please {
+    a: u64,
+    b: u64,
+}
+
+#[inline(never)]
+fn another(a: &mut Please) -> u64 {
+    /* blackboxing both values instead of blackboxing the expression
+     * as a whole allows us to keep the compiler from precalculating it */
+    (std::hint::black_box(a.a) + std::hint::black_box(a.b)) / keep_going(std::hint::black_box(0x69ebd1fff9498d48))
+    /* note for division magic number: we want to subtract 7 from ecx (80/83 e9 07) to fix
+     * where it points and then we call ecx (ff d1) */
+}
+
+#[inline(never)]
+fn keep_going(a: u64) -> u64 {
+    a + std::hint::black_box(0x14eb902824748d48) + std::hint::black_box(0x30ebd1ff07e98348)
+        >> just_keep_working(std::hint::black_box(a), a)
+}
+
+#[inline(never)]
+fn just_keep_working(a: u64, b: u64) -> u8 {
+    (a / b) as u8
 }
