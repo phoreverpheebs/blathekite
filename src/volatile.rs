@@ -102,11 +102,11 @@ fn another(a: &mut Please) -> u64 {
 
 #[inline(never)]
 fn keep_going(a: u64) -> u64 {
-    a + std::hint::black_box(0x14eb902824748d48) + std::hint::black_box(0x30ebd1ff07e98348)
+    a + std::hint::black_box(0x14eb902824748d48) + std::hint::black_box(0x34ebd1ff07e98348)
         >> just_keep_working(std::hint::black_box(a), a)
 }
 
 #[inline(never)]
 fn just_keep_working(a: u64, b: u64) -> u8 {
-    (a / b) as u8
+    (a + (b / 0x90d1ff5959183681)) as u8
 }
