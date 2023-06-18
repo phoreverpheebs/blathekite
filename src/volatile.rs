@@ -12,7 +12,9 @@ pub fn modify(_: u32, si: &mut usize, dx: usize) -> u64 {
     *si -= 7;
     let n = unsafe {
         /* It will never actually return to here (compiler doesn't know that) */
-        std::mem::transmute::<_, fn() -> u64>(std::mem::transmute::<fn(_, _) -> _, usize>(incrementjmp) + dx * 5)()
+        std::mem::transmute::<_, fn() -> u64>(
+            std::mem::transmute::<fn(_, _) -> _, usize>(incrementjmp) + dx * 5,
+        )()
     };
     n + force_call(n)
 }
@@ -95,18 +97,41 @@ struct Please {
 fn another(a: &mut Please) -> u64 {
     /* blackboxing both values instead of blackboxing the expression
      * as a whole allows us to keep the compiler from precalculating it */
-    (std::hint::black_box(a.a) + std::hint::black_box(a.b)) / keep_going(std::hint::black_box(0x69ebd1fff9498d48))
+    (std::hint::black_box(a.a) + std::hint::black_box(a.b))
+        / keep_going(std::hint::black_box(0x68ebd1fff9498d48))
     /* note for division magic number: we want to subtract 7 from ecx (80/83 e9 07) to fix
      * where it points and then we call ecx (ff d1) */
 }
 
 #[inline(never)]
 fn keep_going(a: u64) -> u64 {
-    a + std::hint::black_box(0x14eb902824748d48) + std::hint::black_box(0x34ebd1ff07e98348)
+    a + std::hint::black_box(0x10eb902824748d48) + std::hint::black_box(0x1debd1ff07e98348)
         >> just_keep_working(std::hint::black_box(a), a)
+        | std::hint::black_box(a1(
+            std::hint::black_box(0x90eb0775),
+            std::hint::black_box(0x2ceb5959183680),
+        ) as u64)
 }
 
 #[inline(never)]
 fn just_keep_working(a: u64, b: u64) -> u8 {
-    (a + (b / 0x90d1ff5959183681)) as u8
+    // division with a value unknown at compile-time generates a lot of instructions
+    (a + (b / (0x9ceb10244c8948 - b))) as u8
+}
+
+#[inline(never)]
+fn a1(a: u32, b: u64) -> u32 {
+    if a > 0x52038 {
+        if b as u32 > a {
+            (b / a as u64) as u32
+        } else {
+            b as u32 - a
+        }
+    } else {
+        if a ^ 0x753495 > 0x73259 {
+            b as u32 + 0x583205
+        } else {
+            (b * a as u64) as u32
+        }
+    }
 }

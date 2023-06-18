@@ -5,6 +5,9 @@ _blatherskite, but the 'rs' is in the code._ Expanding on the project
 x86 execution flow, `blathekite` does this by trusting the compiler to compile 
 to the instructions we want and in the order we want.
 
+This project works on `target-cpu=generic` - any sort of extra optimizations could
+mess with the relative addressing.
+
 [gibberish]: https://github.com/phoreverpheebs/gibberish
 
 ## Observations
